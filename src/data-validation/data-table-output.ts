@@ -132,7 +132,8 @@ const hesaFields: Field[] = [
     // Note I have changed the date format to be aligned with dateFns
     fieldType: { type: 'date', format: 'dd-MM-yyyy' },
     shouldDisplay: true,
-    description: ''
+    description: '',
+    additionalMappings: emptyValues
   },
 ]
 
