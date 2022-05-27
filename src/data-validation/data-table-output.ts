@@ -122,7 +122,7 @@ const hesaFields: Field[] = [
   },
   {
     rawName: 'forename_clean',
-    fieldType: { type: 'primary-key' },
+    fieldType: { type: 'string', additionalTransformations: ["trim", "remove-new-lines"] },
     shouldDisplay: true,
     description: 'First name'
   },
@@ -130,7 +130,7 @@ const hesaFields: Field[] = [
     rawName: 'date of birth',
     alias: 'dob',
     // Note I have changed the date format to be aligned with dateFns
-    fieldType: { type: 'date', format: 'dd-MM-YYYY' },
+    fieldType: { type: 'date', format: 'dd-MM-yyyy' },
     shouldDisplay: true,
     description: ''
   },

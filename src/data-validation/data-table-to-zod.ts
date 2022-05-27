@@ -7,7 +7,9 @@ import {
   ValueMapping
 } from './data-table-output'
 import { ZodTypeAny } from "zod";
-import dFns from "date-fns";
+import * as dFns from "date-fns";
+
+import * as R from 'ramda'
 
 /*
 * For now I am assuming we get everything out as strings.
@@ -28,8 +30,17 @@ function rename(fields: Field[], rawObject: RawRecord): RawRecord {
   return Object.fromEntries(keyValuePairs)
 }
 
+const additionalStringTransforms: Record<string, (str: string) => string> = {
+  'trim': str => str.trim(),
+  'remove-new-lines': str => str.replace('\n', '')
+}
+
 function ftSch(fieldType: FieldType): ZodTypeAny {
-  if (fieldType.type === 'string') return z.string()
+  if (fieldType.type === 'string') {
+    const ad: ((str: string) => string)[] = (fieldType.additionalTransformations ?? []).map(key => additionalStringTransforms[key])
+    return z.string().transform(R.compose(R.identity, ...ad as any))
+  }
+
   if (fieldType.type === 'primary-key') return z.string()
   if (fieldType.type === 'group-key') return z.string()
   if (fieldType.type === 'integer') return z.string().transform(str => Number.parseInt(str)).refine(number => !Number.isNaN(number))
@@ -37,7 +48,7 @@ function ftSch(fieldType: FieldType): ZodTypeAny {
     return z.string()
       // Parsing will return an invalid date NOT throw if it does not meet the requirements (not throwing is a requirement
       // for zod transforms)
-      .transform(string => dFns.parse(string, fieldType.type, new Date()))
+      .transform(string => dFns.parse(string, fieldType.format, new Date()))
       .refine(date => dFns.isValid(date))
   }
 
@@ -66,8 +77,8 @@ function fSch(field: Field): ZodTypeAny {
 }
 
 export function generateSecondaryDatasetSchema(datasetDefinition: SecondaryDatasetDefinition): ZodTypeAny {
-  const fschsPairs = datasetDefinition.fields.map(field => [field.alias ?? field.rawName, fSch])
+  const fschsPairs = datasetDefinition.fields.map(field => [field.alias ?? field.rawName, fSch(field)])
   const shape = Object.fromEntries(fschsPairs)
 
-  return z.preprocess(raw => rename(datasetDefinition.fields, raw as RawRecord), z.object(shape))
+  return z.preprocess(raw => rename(datasetDefinition.fields, raw as RawRecord), z.object(shape).strict())
 }
