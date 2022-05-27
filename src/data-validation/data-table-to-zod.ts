@@ -70,10 +70,14 @@ function fSch(field: Field): ZodTypeAny {
   const additionalMappings = field.additionalMappings ?? []
   const ams = mapSch(additionalMappings)
 
-  return z.union([
-    ftSch(field.fieldType),
-    ...ams
-  ] as ProgrammaticUnion).default(field.defaultValue)
+  if (ams.length === 0) {
+    return ftSch(field.fieldType).default(field.defaultValue)
+  } else {
+    return z.union([
+      ftSch(field.fieldType),
+      ...ams
+    ] as ProgrammaticUnion).default(field.defaultValue)
+  }
 }
 
 export function generateSecondaryDatasetSchema(datasetDefinition: SecondaryDatasetDefinition): ZodTypeAny {
