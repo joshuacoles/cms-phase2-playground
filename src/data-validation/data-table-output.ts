@@ -2,7 +2,7 @@
 * A mockup of the possible output from the frontend table from which we could build a zod schema
 * */
 
-type FieldType =
+export type FieldType =
   | { type: 'date', format: string }
   /*
   * There are number of additional transformations which are performed on the data by the application which we may want
@@ -30,7 +30,7 @@ type FieldType =
 /*
 * This assumes we are always given strings (fromValue) and for now we don't have any types on the mappedTo value.
 * */
-type ValueMapping = { fromValue: string, mappedTo: unknown }
+export type ValueMapping = { fromValue: string, mappedTo: unknown }
 
 /*
 * An example of sex mapping as it exists in the application.
@@ -43,11 +43,11 @@ const sexMappings: ValueMapping[] = [
 /*
 * -9 is used throughout the data to signify an empty value.
 * */
-const emptyValues: ValueMapping[] = [
+export const emptyValues: ValueMapping[] = [
   { fromValue: '-9', mappedTo: '' },
 ]
 
-interface Field {
+export interface Field {
   /*
   * The input name in the CSV file (or other raw data source). For example ONS_ID
   * */
@@ -83,13 +83,18 @@ interface Field {
   * Some notes to be displayed about the field in the table.
   * */
   description: string
+
+  /*
+  * A default value. Currently PRE adaption
+  * */
+  defaultValue?: string
 }
 
 /*
 * So for example we might represent the table shown in Greg's example as:
 * */
 
-const hesa: Field[] = [
+const hesaFields: Field[] = [
   {
     rawName: 'ONS_ID',
     fieldType: { type: 'group-key', isMatchingGroup: false },
@@ -130,4 +135,18 @@ const hesa: Field[] = [
     description: ''
   },
 ]
+
+/*
+* For now I have left off the distinction between matching data and search data as I think mirroring between them would
+* be the correct direction moving forwards.
+* */
+export interface SecondaryDatasetDefinition {
+  name: string
+  fields: Field[]
+}
+
+export const hesaDataset: SecondaryDatasetDefinition = {
+  name: 'HESA',
+  fields: hesaFields
+}
 
